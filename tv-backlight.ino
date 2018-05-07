@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 #include <NeoPixelBus.h>
-#include "secrets.h"
+//#include "secrets.h"
 
 #define LEDCOUNT   134       // Number of LEDs used for serial
 #define BAUDRATE   230400    // Serial port speed
@@ -9,13 +9,16 @@
 
 const char prefix[] = {0x41, 0x64, 0x61, 0x00, 0x85, 0xD0};  // prefix, expect this sequence over serial before each frame
 
-const PROGMEM char* WIFI_SSID = MY_WIFI_SSID;
-const PROGMEM char* WIFI_PASS = MY_WIFI_PASS;
+const PROGMEM char* WIFI_SSID = "ssidname";
+const PROGMEM char* WIFI_PASS = "yourpass";
 
 // MQTT: ID, server IP, port, username and password
 const PROGMEM char* MQTT_CLIENT_ID = "ambilight";       // this is how your NodeMCU will identify itself to the MQTT server. Note: I've had issues when multiple clients connect with the same name.
-const PROGMEM char* MQTT_SERVER_IP = MY_MQTT_SERVER_IP; // The IP/hostname of the MQTT server
-const PROGMEM uint16_t MQTT_SERVER_PORT = 1883;         // The port where MQTT is running 
+const PROGMEM char* MQTT_SERVER_IP = "192.168.2.8"; // The IP/hostname of the MQTT server
+const PROGMEM uint16_t MQTT_SERVER_PORT = 1883;         // The port where MQTT is running
+const PROGMEM char* MQTT_USERNAME = "username";
+const PROGMEM char* MQTT_PASSWORD = "password";
+const PROGMEM char* MQTT_NAME = "ESP8266Client";
 
 // MQTT: topics to subscribe to
 const char* MQTT_SWITCH_COMMAND_TOPIC = "ambilight/switch";
@@ -76,7 +79,7 @@ void setup() {
     mqtt.setServer(MQTT_SERVER_IP, MQTT_SERVER_PORT);
     mqtt.setCallback(mqttMessageReceived);
 
-    if (mqtt.connect("ESP8266Client")) {
+    if (mqtt.connect(MQTT_NAME,MQTT_USERNAME,MQTT_PASSWORD)) {
         mqtt.subscribe(MQTT_SWITCH_COMMAND_TOPIC);
         mqtt.subscribe(MQTT_RGB_COMMAND_TOPIC);
 
@@ -230,7 +233,7 @@ RgbColor calculateFade(RgbColor fromColor, RgbColor toColor, float progress) {
 void handleSerialTimeout() {
     if (state.serialTimeoutCounter >= SERIAL_TIMEOUT_THRESHOLD) {
         // Reconnect to MQTT because it likely timed out
-        if (mqtt.connect("ESP8266Client")) {
+        if (mqtt.connect(MQTT_NAME,MQTT_USERNAME,MQTT_PASSWORD)) {
             mqtt.subscribe(MQTT_SWITCH_COMMAND_TOPIC);
             mqtt.subscribe(MQTT_RGB_COMMAND_TOPIC);
         }
